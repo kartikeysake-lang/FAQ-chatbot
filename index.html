@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ Chatbot</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f9;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .chat-box {
+            width: 100%;
+            max-width: 520px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            height: 600px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        }
+
+        .header {
+            background: #2b5c8f;
+            color: #ffffff;
+            padding: 14px 18px;
+            border-top-left-radius: 7px;
+            border-top-right-radius: 7px;
+        }
+
+        .header h2 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .header p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            opacity: 0.9;
+        }
+
+        .quick-questions {
+            display: flex;
+            gap: 6px;
+            padding: 8px 12px;
+            background: #f9f9f9;
+            border-bottom: 1px solid #eee;
+            overflow-x: auto;
+        }
+
+        .quick-questions button {
+            background: #fff;
+            border: 1px solid #ccc;
+            border-radius: 12px;
+            padding: 4px 10px;
+            font-size: 11px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .quick-questions button:hover {
+            background: #eef2f7;
+        }
+
+        .messages-area {
+            flex: 1;
+            padding: 14px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .msg {
+            max-width: 80%;
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .bot-msg {
+            background: #f1f3f5;
+            color: #222;
+            align-self: flex-start;
+        }
+
+        .user-msg {
+            background: #2b5c8f;
+            color: #fff;
+            align-self: flex-end;
+        }
+
+        .match-info {
+            font-size: 11px;
+            color: #777;
+            margin-top: 4px;
+        }
+
+        .input-row {
+            display: flex;
+            padding: 12px;
+            border-top: 1px solid #eee;
+            background: #fff;
+        }
+
+        .input-row input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .input-row button {
+            margin-left: 8px;
+            padding: 10px 18px;
+            background: #2b5c8f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .input-row button:hover {
+            background: #20456c;
+        }
+    </style>
+</head>
+<body>
+
+<div class="chat-box">
+    <div class="header">
+        <h2>FAQ Assistant</h2>
+        <p>Ask questions regarding orders, returns, and support</p>
+    </div>
+
+    <div class="quick-questions">
+        <button onclick="setQuery('What is your return policy?')">Return Policy</button>
+        <button onclick="setQuery('How do I track my order?')">Track Order</button>
+        <button onclick="setQuery('How long does shipping take?')">Shipping Time</button>
+        <button onclick="setQuery('What payment methods do you accept?')">Payments</button>
+    </div>
+
+    <div class="messages-area" id="messagesArea">
+        <div class="msg bot-msg">
+            Hi, how can I help you today? Feel free to ask any question.
+        </div>
+    </div>
+
+    <form class="input-row" onsubmit="sendMessage(event)">
+        <input type="text" id="userInput" placeholder="Type your question..." autocomplete="off">
+        <button type="submit">Send</button>
+    </form>
+</div>
+
+<script>
+    const faqs = [
+        {
+            "id": 1,
+            "question": "What are your customer support hours?",
+            "answer": "Our customer support team is available Monday through Friday, 9:00 AM to 6:00 PM EST."
+        },
+        {
+            "id": 2,
+            "question": "How do I track my order?",
+            "answer": "Once your order ships, you will receive an email with a tracking number and a direct link to track your shipment."
+        },
+        {
+            "id": 3,
+            "question": "What is your return policy?",
+            "answer": "We offer a 30-day return policy. Items must be in original condition with tags and packaging intact."
+        },
+        {
+            "id": 4,
+            "question": "How long does shipping take?",
+            "answer": "Standard shipping takes 3-5 business days. Express shipping takes 1-2 business days."
+        },
+        {
+            "id": 5,
+            "question": "Do you ship internationally?",
+            "answer": "Yes, we ship to over 50 countries worldwide. International shipping typically takes 7-14 business days."
+        },
+        {
+            "id": 6,
+            "question": "What payment methods do you accept?",
+            "answer": "We accept all major credit cards (Visa, MasterCard, Amex), PayPal, Apple Pay, and Google Pay."
+        },
+        {
+            "id": 7,
+            "question": "How can I cancel or modify my order?",
+            "answer": "You can cancel or modify your order within 1 hour of placing it by visiting 'My Orders' or contacting support."
+        },
+        {
+            "id": 8,
+            "question": "How do I reset my password?",
+            "answer": "Click on 'Forgot Password' on the login page and enter your registered email address to receive a reset link."
+        },
+        {
+            "id": 9,
+            "question": "Are your products covered by a warranty?",
+            "answer": "Yes, all products come with a 1-year limited warranty covering manufacturing defects."
+        },
+        {
+            "id": 10,
+            "question": "How can I contact customer service?",
+            "answer": "You can reach us by email at support@example.com or call our toll-free hotline at 1-800-555-0199."
+        }
+    ];
+
+    const stopWords = new Set([
+        "a", "about", "above", "after", "again", "against", "all", "am", "an", "and", "any", "are",
+        "as", "at", "be", "because", "been", "before", "being", "below", "between", "both", "but",
+        "by", "can", "did", "do", "does", "doing", "for", "from", "further", "had", "has", "have",
+        "he", "her", "here", "him", "how", "i", "if", "in", "into", "is", "it", "its", "me", "more",
+        "most", "my", "no", "nor", "not", "of", "off", "on", "once", "only", "or", "other", "our",
+        "out", "over", "she", "should", "so", "some", "such", "than", "that", "the", "their", "then",
+        "there", "these", "they", "this", "those", "through", "to", "too", "under", "until", "up",
+        "very", "was", "we", "were", "what", "when", "where", "which", "while", "who", "whom", "why",
+        "will", "with", "you", "your"
+    ]);
+
+    function cleanText(text) {
+        return text.toLowerCase()
+            .replace(/[^a-z0-9\s]/g, ' ')
+            .split(/\s+/)
+            .filter(w => w.length > 1 && !stopWords.has(w));
+    }
+
+    const processedData = faqs.map(item => ({
+        ...item,
+        tokens: cleanText(item.question)
+    }));
+
+    function getCosineSimilarity(tokens1, tokens2) {
+        const counts1 = {};
+        const counts2 = {};
+        const vocabulary = new Set([...tokens1, ...tokens2]);
+
+        tokens1.forEach(w => counts1[w] = (counts1[w] || 0) + 1);
+        tokens2.forEach(w => counts2[w] = (counts2[w] || 0) + 1);
+
+        let dot = 0;
+        let sum1 = 0;
+        let sum2 = 0;
+
+        vocabulary.forEach(w => {
+            const c1 = counts1[w] || 0;
+            const c2 = counts2[w] || 0;
+            dot += c1 * c2;
+            sum1 += c1 * c1;
+            sum2 += c2 * c2;
+        });
+
+        if (sum1 === 0 || sum2 === 0) return 0;
+        return dot / (Math.sqrt(sum1) * Math.sqrt(sum2));
+    }
+
+    function matchQuery(query) {
+        const tokens = cleanText(query);
+        if (tokens.length === 0) {
+            return { answer: "Please enter a question.", matched_question: null, score: 0 };
+        }
+
+        let bestScore = 0;
+        let bestMatch = null;
+
+        for (const item of processedData) {
+            const score = getCosineSimilarity(tokens, item.tokens);
+            if (score > bestScore) {
+                bestScore = score;
+                bestMatch = item;
+            }
+        }
+
+        if (bestScore >= 0.2 && bestMatch) {
+            return {
+                answer: bestMatch.answer,
+                matched_question: bestMatch.question,
+                score: Math.round(bestScore * 100)
+            };
+        }
+        return {
+            answer: "Sorry, I couldn't find an answer for that. Please try rephrasing your question.",
+            matched_question: null,
+            score: Math.round(bestScore * 100)
+        };
+    }
+
+    const messagesArea = document.getElementById('messagesArea');
+    const userInput = document.getElementById('userInput');
+
+    function appendMessage(text, isUser, matchText = "") {
+        const div = document.createElement('div');
+        div.className = 'msg ' + (isUser ? 'user-msg' : 'bot-msg');
+        div.innerText = text;
+
+        if (matchText) {
+            const info = document.createElement('div');
+            info.className = 'match-info';
+            info.innerText = matchText;
+            div.appendChild(info);
+        }
+
+        messagesArea.appendChild(div);
+        messagesArea.scrollTop = messagesArea.scrollHeight;
+    }
+
+    function setQuery(text) {
+        userInput.value = text;
+        sendMessage(new Event('submit'));
+    }
+
+    function sendMessage(e) {
+        e.preventDefault();
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        appendMessage(text, true);
+        userInput.value = '';
+
+        setTimeout(() => {
+            const res = matchQuery(text);
+            let info = '';
+            if (res.matched_question) {
+                info = `Matched: "${res.matched_question}" (${res.score}% match)`;
+            }
+            appendMessage(res.answer, false, info);
+        }, 150);
+    }
+</script>
+
+</body>
+</html>
